@@ -9,11 +9,16 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-
-    @Column(length = 30, unique = true, nullable = false)
+    @Column(length = 30, unique = true, updatable = false, nullable = false)
     private String userId;
+
+    @Column(length = 30, nullable = false)
     private String password;
+
+    @Column(length = 15, nullable = false)
     private String name;
+
+    @Column(length = 20, nullable = false)
     private String email;
 
     public User() {
@@ -66,17 +71,31 @@ public class User {
         this.email = email;
     }
 
+    public void update(User user) {
+        if (!canUpdate(user)) return;
+        this.setName(user.getName());
+        this.setEmail(user.getEmail());
+    }
+
+    private boolean canUpdate(User user) {
+        if (!getPassword().equals(user.getPassword())) return false;
+        return true;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         User user = (User) o;
-        return Objects.equals(userId, user.userId) &&
-                Objects.equals(password, user.password);
+        return Objects.equals(id, user.id) &&
+                Objects.equals(userId, user.userId) &&
+                Objects.equals(password, user.password) &&
+                Objects.equals(name, user.name) &&
+                Objects.equals(email, user.email);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(userId, password);
+        return Objects.hash(id, userId, password, name, email);
     }
 }

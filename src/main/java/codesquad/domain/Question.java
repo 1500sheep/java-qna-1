@@ -9,9 +9,14 @@ public class Question {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(updatable = false, length = 15, nullable = false)
     private String writer;
+
+    @Column(length = 30, nullable = false)
     private String title;
+
+    @Lob
+    @Column(nullable = false)
     private String contents;
 
     public Question() {
@@ -55,16 +60,30 @@ public class Question {
         this.contents = contents;
     }
 
+    public void update(Question question) {
+        if (!canUpdate(question)) return;
+        this.setTitle(question.getTitle());
+        this.setContents(question.getContents());
+    }
+
+    private boolean canUpdate(Question question) {
+        if (!getId().equals(question.getId())) return false;
+        return true;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Question question = (Question) o;
-        return Objects.equals(id, question.id);
+        return Objects.equals(id, question.id) &&
+                Objects.equals(writer, question.writer) &&
+                Objects.equals(title, question.title) &&
+                Objects.equals(contents, question.contents);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id);
+        return Objects.hash(id, writer, title, contents);
     }
 }
