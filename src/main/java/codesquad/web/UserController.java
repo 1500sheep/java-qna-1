@@ -1,11 +1,14 @@
 package codesquad.web;
 
 import codesquad.domain.User;
+import codesquad.domain.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 
 import java.util.ArrayList;
@@ -15,6 +18,9 @@ import java.util.List;
 public class UserController {
 
     private List<User> users = new ArrayList<>();
+
+    @Autowired
+    private UserRepository userRepository;
 
     // post 방식으로 받을 것이며, /users로 들어오게 되면 이 메서드를 실행하라는 뜻!
     @PostMapping("/users")
@@ -29,10 +35,30 @@ public class UserController {
     }
 
     @GetMapping("/users/{index}")
-    public String show(@PathVariable int index,Model model){
-        model.addAttribute("user",users.get(index));
+    public String show(@PathVariable long index,Model model){
+        User user = userRepository.findById(index).get();
+        model.addAttribute("user",user);
         return "/user/profile";
     }
+    @GetMapping("/users/{index}/form")
+    public String updateForm(@PathVariable int index,Model model){
+        model.addAttribute("user",users.get(index));
+        model.addAttribute("index",index);
+        return "/user/updateForm";
+    }
+
+    @PostMapping("/users/{index}/update")
+    public String update(@PathVariable int index,User user){
+        verifyUser(index,user);
+        return "redirect:/users";
+    }
+
+    private void verifyUser(int index, User user){
+        if(users.get(index).equals(user)){
+            users.set(index,user);
+        }
+    }
+
     @GetMapping("/page/user/login")
     public String pageUserLogin(){
         return "/user/login";
