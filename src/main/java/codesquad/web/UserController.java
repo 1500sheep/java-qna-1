@@ -16,55 +16,54 @@ import java.util.List;
 
 @Controller
 public class UserController {
-
-    private List<User> users = new ArrayList<>();
-
     @Autowired
     private UserRepository userRepository;
 
     // post 방식으로 받을 것이며, /users로 들어오게 되면 이 메서드를 실행하라는 뜻!
     @PostMapping("/users")
     public String create(User user) {
-        users.add(user);
+        userRepository.save(user);
         return "redirect:/users";
     }
+
     @GetMapping("/users")
     public String create(Model model) {
-        model.addAttribute("users",users);
+        model.addAttribute("users", userRepository.findAll());
         return "/user/list";
     }
 
-    @GetMapping("/users/{index}")
-    public String show(@PathVariable long index,Model model){
-        User user = userRepository.findById(index).get();
-        model.addAttribute("user",user);
+    @GetMapping("/users/{id}")
+    public String show(@PathVariable long id, Model model) {
+        User user = userRepository.findById(id).get();
+        model.addAttribute("user", user);
         return "/user/profile";
     }
-    @GetMapping("/users/{index}/form")
-    public String updateForm(@PathVariable int index,Model model){
-        model.addAttribute("user",users.get(index));
-        model.addAttribute("index",index);
+
+    @GetMapping("/users/{id}/form")
+    public String updateForm(@PathVariable long id, Model model) {
+        model.addAttribute("user", userRepository.findById(id).get());
         return "/user/updateForm";
     }
 
-    @PostMapping("/users/{index}/update")
-    public String update(@PathVariable int index,User user){
-        verifyUser(index,user);
+    @PostMapping("/users/{id}/update")
+    public String update(@PathVariable long id, User user) {
+        verifyUser(id, user);
         return "redirect:/users";
     }
 
-    private void verifyUser(int index, User user){
-        if(users.get(index).equals(user)){
-            users.set(index,user);
+    private void verifyUser(long id, User user) {
+        if (userRepository.findById(id).get().equals(user)) {
+            userRepository.save(user);
         }
     }
 
     @GetMapping("/page/user/login")
-    public String pageUserLogin(){
+    public String pageUserLogin() {
         return "/user/login";
     }
+
     @GetMapping("/page/user/form")
-    public String pageUserForm(){
+    public String pageUserForm() {
         return "/user/form";
     }
 
