@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/questions")
@@ -72,17 +73,31 @@ public class QuestionController {
     public String delete(@PathVariable Long id, HttpSession session) {
         User user = getUser(session);
         Question question = questionRepository.findById(id).orElseThrow(QuestionNotFoundException::new);
-        question.checkWriter(user);
-        questionRepository.deleteById(id);
+        deleteQuestion(user, question);
+        deleteAnswerByQuestionId(id);
         return "redirect:/";
+    }
+
+    private void deleteAnswerByQuestionId(@PathVariable Long id) {
+        List<Answer> answers = answerRepository.findAllByQuestionIdAndIsDeletedFalse(id)
+                .stream()
+                .map(Answer::delete)
+                .collect(Collectors.toList());
+        answerRepository.saveAll(answers);
+    }
+
+    private void deleteQuestion(User user, Question question) {
+        question.checkWriter(user);
+        question.delete();
+        questionRepository.save(question);
     }
 
     @GetMapping("/{id}/form")
     public String updateForm(@PathVariable Long id, Model model, HttpSession session) {
         User user = getUser(session);
         Question question = questionRepository.findById(id).orElseThrow(QuestionNotFoundException::new);
-        question.checkWriter(user);
         question.setWriter(user);
+        question.checkWriter(user);
         model.addAttribute("question", question);
         return "/qna/updateForm";
     }
@@ -94,7 +109,7 @@ public class QuestionController {
         answer.setWriter(user);
         answer.setQuestion(question);
         answerRepository.save(answer);
-        return "redirect:/questions/{qid}";
+        return "redirect:/questions/{questionId}";
     }
 
     @DeleteMapping("/{id}/answers/{answerId}")

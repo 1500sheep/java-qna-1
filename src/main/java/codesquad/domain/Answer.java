@@ -1,5 +1,7 @@
 package codesquad.domain;
 
+import codesquad.exception.ForbiddenException;
+
 import javax.persistence.*;
 import java.util.Objects;
 import java.util.Optional;
@@ -24,7 +26,6 @@ public class Answer {
 
     @Column(nullable = false, columnDefinition = "tinyint(1) default 0")
     private boolean isDeleted;
-
 
     public Answer() {
 
@@ -76,13 +77,18 @@ public class Answer {
         isDeleted = deleted;
     }
 
+    public Answer delete() {
+        isDeleted = true;
+        return this;
+    }
+
     public boolean matchWriter(User user) {
         return writer.equals(user);
     }
 
     public void deleteByUser(User user) {
         if (!matchWriter(user)) {
-            throw new RuntimeException();
+            throw new ForbiddenException();
         }
         this.isDeleted = true;
     }

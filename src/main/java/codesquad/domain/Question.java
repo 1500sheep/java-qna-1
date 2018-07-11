@@ -23,6 +23,9 @@ public class Question {
     @Column
     private String contents;
 
+    @Column(nullable = false, columnDefinition = "tinyint(1) default 0")
+    private boolean isDeleted;
+
     public Question() {
 
     }
@@ -66,9 +69,21 @@ public class Question {
         this.contents = contents;
     }
 
+    public boolean isDeleted() {
+        return isDeleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+        isDeleted = deleted;
+    }
+
     public void update(Question newQuestion) {
         this.title = newQuestion.title;
         this.contents = newQuestion.contents;
+    }
+
+    public void delete() {
+        isDeleted = true;
     }
 
     public void checkWriter(User writer) {
