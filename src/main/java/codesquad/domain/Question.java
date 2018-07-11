@@ -1,10 +1,13 @@
 package codesquad.domain;
 
+import codesquad.exception.ForbiddenException;
+
 import javax.persistence.*;
 import java.util.Objects;
 
 @Entity
 public class Question {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -68,9 +71,9 @@ public class Question {
         this.contents = newQuestion.contents;
     }
 
-    public boolean checkWriter(User writer) {
-        if (this.writer.equals(writer)) return true;
-        return false;
+    public void checkWriter(User writer) {
+        if (!this.writer.equals(writer))
+            throw new ForbiddenException();
     }
 
     @Override
@@ -78,12 +81,15 @@ public class Question {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Question question = (Question) o;
-        return Objects.equals(id, question.id);
+        return Objects.equals(id, question.id) &&
+                Objects.equals(writer, question.writer) &&
+                Objects.equals(title, question.title) &&
+                Objects.equals(contents, question.contents);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, writer);
+        return Objects.hash(id, writer, title, contents);
     }
 
 }

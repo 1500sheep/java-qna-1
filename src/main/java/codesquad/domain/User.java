@@ -1,5 +1,8 @@
 package codesquad.domain;
 
+import codesquad.exception.ForbiddenException;
+import codesquad.exception.InvalidPasswordException;
+
 import javax.persistence.*;
 import java.util.Objects;
 
@@ -42,56 +45,63 @@ public class User {
         this.id = id;
     }
 
-    public void setUserId(String userId) {
-        this.userId = userId;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
     public String getUserId() {
         return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 
     public String getPassword() {
         return password;
     }
 
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
     public String getName() {
         return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getEmail() {
         return email;
     }
 
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public void login(String password) {
+        if (!passwordMatch(password)) {
+            throw new InvalidPasswordException();
+        }
+    }
+
     public void update(User newUser) {
+        if (!passwordMatch(newUser)) {
+            throw new InvalidPasswordException("/users/" + newUser.getId() + "/form");
+        }
         this.name = newUser.name;
         this.email = newUser.email;
     }
 
-    public boolean checkPassword(String password){
-        if(this.password.equals(password)) return true;
-        return false;
+    public boolean passwordMatch(String password) {
+        return this.password.equals(password);
     }
 
-    public boolean checkPassword(User user){
-        if(this.password.equals(user.getPassword())) return true;
-        return false;
+    public boolean passwordMatch(User user) {
+        return passwordMatch(user.password);
     }
 
-    public boolean checkUserId(String userId){
-        if(this.userId.equals(userId)) return true;
-        return false;
+    public void checkId(Long id) {
+        if (!this.id.equals(id))
+            throw new ForbiddenException();
     }
 
     @Override

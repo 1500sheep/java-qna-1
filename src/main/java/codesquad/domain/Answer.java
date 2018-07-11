@@ -1,10 +1,12 @@
 package codesquad.domain;
 
 import javax.persistence.*;
+import java.util.Objects;
 import java.util.Optional;
 
 @Entity
 public class Answer {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -28,8 +30,7 @@ public class Answer {
 
     }
 
-    public Answer(Long id, Question question, User writer, String comment) {
-        this.id = id;
+    public Answer(Question question, User writer, String comment) {
         this.question = question;
         this.writer = writer;
         this.comment = comment;
@@ -84,6 +85,23 @@ public class Answer {
             throw new RuntimeException();
         }
         this.isDeleted = true;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Answer answer = (Answer) o;
+        return isDeleted == answer.isDeleted &&
+                Objects.equals(id, answer.id) &&
+                Objects.equals(question, answer.question) &&
+                Objects.equals(writer, answer.writer) &&
+                Objects.equals(comment, answer.comment);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, question, writer, comment, isDeleted);
     }
 
 }
