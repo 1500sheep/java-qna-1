@@ -26,10 +26,8 @@ public class User {
 
     }
 
-    public User(String userId,
-                String password,
-                String name,
-                String email) {
+    public User(Long id, String userId, String password, String name, String email) {
+        this.id = id;
         this.userId = userId;
         this.password = password;
         this.name = name;
@@ -95,6 +93,7 @@ public class User {
         if(this.userId.equals(userId)) return true;
         return false;
     }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -102,11 +101,14 @@ public class User {
         User user = (User) o;
         return Objects.equals(id, user.id) &&
                 Objects.equals(userId, user.userId) &&
-                Objects.equals(password, user.password);
+                Objects.equals(password, user.password) &&
+                Objects.equals(name, user.name) &&
+                Objects.equals(email, user.email);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, userId, password);
+        return Objects.hash(id, userId, password, name, email);
     }
+
 }

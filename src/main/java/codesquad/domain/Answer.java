@@ -1,0 +1,89 @@
+package codesquad.domain;
+
+import javax.persistence.*;
+import java.util.Optional;
+
+@Entity
+public class Answer {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @ManyToOne
+    @JoinColumn(foreignKey = @ForeignKey)
+    private Question question;
+
+    @ManyToOne
+    @JoinColumn(foreignKey = @ForeignKey)
+    private User writer;
+
+    @Column(nullable = false, length = 140)
+    private String comment;
+
+    @Column(nullable = false, columnDefinition = "tinyint(1) default 0")
+    private boolean isDeleted;
+
+
+    public Answer() {
+
+    }
+
+    public Answer(Long id, Question question, User writer, String comment) {
+        this.id = id;
+        this.question = question;
+        this.writer = writer;
+        this.comment = comment;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Question getQuestion() {
+        return question;
+    }
+
+    public void setQuestion(Question question) {
+        this.question = question;
+    }
+
+    public User getWriter() {
+        return writer;
+    }
+
+    public void setWriter(User writer) {
+        this.writer = writer;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
+    public boolean isDeleted() {
+        return isDeleted;
+    }
+
+    public void setDeleted(boolean deleted) {
+        isDeleted = deleted;
+    }
+
+    public boolean matchWriter(User user) {
+        return writer.equals(user);
+    }
+
+    public void deleteByUser(User user) {
+        if (!matchWriter(user)) {
+            throw new RuntimeException();
+        }
+        this.isDeleted = true;
+    }
+
+}

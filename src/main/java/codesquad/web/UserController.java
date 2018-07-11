@@ -1,9 +1,7 @@
 package codesquad.web;
 
 import codesquad.domain.User;
-import codesquad.domain.UserRepository;
-import codesquad.exception.GlobalExceptionHandler;
-import codesquad.exception.NotFoundException;
+import codesquad.repository.UserRepository;
 import codesquad.util.SessionHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;

@@ -1,17 +1,19 @@
 package codesquad.web;
 
+import codesquad.domain.Answer;
 import codesquad.domain.Question;
-import codesquad.domain.QuestionRepository;
+import codesquad.repository.AnswerRepository;
+import codesquad.repository.QuestionRepository;
 import codesquad.domain.User;
-import codesquad.domain.UserRepository;
+import codesquad.repository.UserRepository;
 import codesquad.util.SessionHandler;
-import org.omg.CosNaming.NamingContextPackage.NotFound;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
+import java.util.List;
 
 @Controller
 @RequestMapping("/questions")
@@ -23,8 +25,12 @@ public class QuestionController {
     @Autowired
     private UserRepository userRepository;
 
+
+    @Autowired
+    private AnswerRepository answerRepository;
+
     @PostMapping
-    public String create(Question question,HttpSession session) {
+    public String create(Question question, HttpSession session) {
         User user = userRepository.findById(SessionHandler.getId(session)).get();
         question.setWriter(user);
         questionRepository.save(question);
@@ -39,7 +45,12 @@ public class QuestionController {
 
     @GetMapping("/{id}")
     public String show(@PathVariable Long id, Model model) {
+
+        Iterable<Answer> answers = answerRepository.findAllByQuestionIdAndIsDeletedFalse(id);
         model.addAttribute("question", questionRepository.findById(id).get());
+        model.addAttribute("answers", answers);
+        model.addAttribute("num", ((List<Answer>) answers).size());
+
         return "/qna/show";
     }
 
@@ -47,7 +58,7 @@ public class QuestionController {
     public String updateForm(@PathVariable Long id, Model model, HttpSession session) {
         User user = userRepository.findById(SessionHandler.getId(session)).get();
         Question question = questionRepository.findById(id).get();
-        if(question.checkWriter(user)){
+        if (question.checkWriter(user)) {
             question.setWriter(user);
             model.addAttribute("question", question);
             return "/qna/updateForm";
@@ -70,16 +81,34 @@ public class QuestionController {
     }
 
     @DeleteMapping("/{id}")
-    public String delete(@PathVariable Long id,HttpSession session) {
+    public String delete(@PathVariable Long id, HttpSession session) {
         User user = userRepository.findById(SessionHandler.getId(session)).get();
         Question question = questionRepository.findById(id).get();
-        if(question.checkWriter(user)){
+        if (question.checkWriter(user)) {
             questionRepository.deleteById(id);
             return "redirect:/";
 
         }
         return "/qna/update_failed";
+    }
 
+    @PostMapping("/{id}/answers")
+    public String createAnwer(@PathVariable Long id, Answer answer, HttpSession session) {
+        User user = userRepository.findById(SessionHandler.getId(session)).get();
+        Question question = questionRepository.findById(id).get();
+        answer.setWriter(user);
+        answer.setQuestion(question);
+        answerRepository.save(answer);
+        return "redirect:/questions/{id}";
+    }
+
+    @DeleteMapping("/{id}/answers/{answerId}")
+    public String deleteAnswer(@PathVariable("id") Long id, @PathVariable("answerId") Long answerId, HttpSession session) {
+        User user = userRepository.findById(SessionHandler.getId(session)).get();
+        Answer answer = answerRepository.findById(answerId).orElseThrow(IllegalAccessError::new);
+        answer.deleteByUser(user);
+        answerRepository.save(answer);
+        return "redirect:/questions/{id}";
     }
 
 }
