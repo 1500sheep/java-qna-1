@@ -1,5 +1,6 @@
 package codesquad.domain;
 
+import codesquad.exception.ForbiddenException;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -14,29 +15,20 @@ public class AnswerTest {
 
     @Before
     public void setUp() throws Exception {
-        answer = new Answer();
         me = new User(1L, "id", "password", "name", "email");
         other = new User(2L, "id", "password", "name", "email");
+        answer = new Answer();
         answer.setWriter(me);
     }
 
     @Test
-    public void matchWriterSucceed() {
-        assertThat(answer.matchWriter(me)).isTrue();
-    }
-    @Test
-    public void matchWriterFail() {
-        assertThat(answer.matchWriter(other)).isFalse();
-    }
-    @Test
-    public void deleteSucceed() {
+    public void deleteSucceedByUser() {
         answer.deleteByUser(me);
         assertThat(answer.isDeleted()).isTrue();
     }
 
-    @Test(expected = RuntimeException.class)
-    public void deleteFail() {
-        User other = new User(2L, "id", "password", "name", "email");
+    @Test(expected = ForbiddenException.class)
+    public void deleteFailedByUser() {
         answer.deleteByUser(other);
     }
 

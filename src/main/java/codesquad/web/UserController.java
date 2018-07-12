@@ -28,7 +28,7 @@ public class UserController {
     @PostMapping("/login")
     public String login(String userId, String password, HttpSession session) {
         User user = userRepository.findByUserId(userId).orElseThrow(InvalidUserIdException::new);
-        user.login(password);
+        user.validatePassword(password);
         SessionHandler.setSession(session, user);
         return "redirect:/";
     }
@@ -79,7 +79,7 @@ public class UserController {
     }
 
     private User getUser(HttpSession session) {
-        Long uid = SessionHandler.getId(session).orElseThrow(UserNotInSessionException::new);
+        Long uid = SessionHandler.getId(session);
         return userRepository.findById(uid).orElseThrow(UserNotFoundException::new);
     }
 

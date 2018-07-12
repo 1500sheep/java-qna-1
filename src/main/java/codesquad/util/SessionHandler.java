@@ -2,6 +2,8 @@ package codesquad.util;
 
 import codesquad.domain.User;
 import codesquad.exception.ForbiddenException;
+import codesquad.exception.UserNotFoundException;
+import codesquad.exception.UserNotInSessionException;
 
 import javax.servlet.http.HttpSession;
 import java.util.Optional;
@@ -14,8 +16,8 @@ public class SessionHandler {
         session.setAttribute(USER_KEY, user.getId());
     }
 
-    public static Optional<Long> getId(HttpSession session) {
-        return Optional.ofNullable((Long) session.getAttribute(USER_KEY));
+    public static Long getId(HttpSession session) {
+        return Optional.ofNullable((Long) session.getAttribute(USER_KEY)).orElseThrow(UserNotInSessionException::new);
     }
 
     public static void removeSession(HttpSession session) {

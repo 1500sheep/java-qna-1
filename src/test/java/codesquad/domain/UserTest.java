@@ -22,13 +22,13 @@ public class UserTest {
     @Test
     public void loginSucceed() {
         User anonymous = new User(1L, "me", "pass", "me", "email@me.com");
-        anonymous.login("pass"); //?
+        anonymous.validatePassword("pass");
         assertThat(anonymous).isEqualTo(me);
     }
 
     @Test(expected = InvalidPasswordException.class)
-    public void loginFailed() {
-        me.login(other.getPassword());
+    public void isPasswordValid() {
+        me.validatePassword(other.getPassword());
     }
 
     @Test
@@ -39,13 +39,13 @@ public class UserTest {
     }
 
     @Test
-    public void passwordMatch() {
-        assertThat(me.passwordMatch("pass")).isTrue();
+    public void isPasswordMatch() {
+        assertThat(me.isPasswordMatch("pass")).isTrue();
     }
 
     @Test
-    public void passwordMatchUser() {
-        assertThat(me.passwordMatch(other)).isFalse();
+    public void isPasswordNotMatchByUser() {
+        assertThat(me.isPasswordMatch(other)).isFalse();
     }
 
     @Test(expected = ForbiddenException.class)

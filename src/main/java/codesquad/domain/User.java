@@ -77,26 +77,26 @@ public class User {
         this.email = email;
     }
 
-    public void login(String password) {
-        if (!passwordMatch(password)) {
+    public void validatePassword(String password) {
+        if (!isPasswordMatch(password)) {
             throw new InvalidPasswordException();
         }
     }
 
     public void update(User newUser) {
-        if (!passwordMatch(newUser)) {
+        if (!isPasswordMatch(newUser)) {
             throw new InvalidPasswordException("/users/" + newUser.getId() + "/form");
         }
         this.name = newUser.name;
         this.email = newUser.email;
     }
 
-    public boolean passwordMatch(String password) {
+    public boolean isPasswordMatch(String password) {
         return this.password.equals(password);
     }
 
-    public boolean passwordMatch(User user) {
-        return passwordMatch(user.password);
+    public boolean isPasswordMatch(User user) {
+        return isPasswordMatch(user.password);
     }
 
     public void checkId(Long id) {

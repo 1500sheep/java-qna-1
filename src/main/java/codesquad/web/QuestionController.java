@@ -34,7 +34,7 @@ public class QuestionController {
 
     @GetMapping
     public String list(Model model) {
-        model.addAttribute("questions", questionRepository.findAll());
+        model.addAttribute("questions", questionRepository.findAllByIsDeletedFalse());
         return "/index";
     }
 
@@ -54,7 +54,7 @@ public class QuestionController {
     @GetMapping("/{id}")
     public String show(@PathVariable Long id, Model model) {
         List<Answer> answers = answerRepository.findAllByQuestionIdAndIsDeletedFalse(id);
-        model.addAttribute("question", questionRepository.findById(id).orElseThrow(QuestionNotFoundException::new));
+        model.addAttribute("question", questionRepository.findByIdAndIsDeletedFalse(id).orElseThrow(QuestionNotFoundException::new));
         model.addAttribute("answers", answers);
         model.addAttribute("num", answers.size());
 
@@ -62,9 +62,9 @@ public class QuestionController {
     }
 
     @PutMapping("/{id}")
-    public String update(@PathVariable Long id, Question newQuestion) {
-        Question question = questionRepository.findById(id).orElseThrow(QuestionNotFoundException::new);
-        question.update(newQuestion);
+    public String update(@PathVariable Long id, Question newQuestion, HttpSession session) {
+        Question question = questionRepository.findByIdAndIsDeletedFalse(id).orElseThrow(QuestionNotFoundException::new);
+        question.updateByUser(getUser(session), newQuestion);
         questionRepository.save(question);
         return "redirect:/";
     }
@@ -72,32 +72,31 @@ public class QuestionController {
     @DeleteMapping("/{id}")
     public String delete(@PathVariable Long id, HttpSession session) {
         User user = getUser(session);
-        Question question = questionRepository.findById(id).orElseThrow(QuestionNotFoundException::new);
-        deleteQuestion(user, question);
-        deleteAnswerByQuestionId(id);
+        Question question = questionRepository.findByIdAndIsDeletedFalse(id).orElseThrow(QuestionNotFoundException::new);
+        List<Answer> answers = answerRepository.findAllByQuestionIdAndIsDeletedFalse(id);
+        deleteQuestion(user, question, answers);
+        deleteAnswerByQuestionId(user, id);
         return "redirect:/";
     }
 
-    private void deleteAnswerByQuestionId(@PathVariable Long id) {
-        List<Answer> answers = answerRepository.findAllByQuestionIdAndIsDeletedFalse(id)
+    private void deleteAnswerByQuestionId(User user, Long questionId) {
+        List<Answer> answers = answerRepository.findAllByQuestionIdAndIsDeletedFalse(questionId)
                 .stream()
-                .map(Answer::delete)
+                .map(answer -> answer.deleteByUser(user))
                 .collect(Collectors.toList());
         answerRepository.saveAll(answers);
     }
 
-    private void deleteQuestion(User user, Question question) {
-        question.checkWriter(user);
-        question.delete();
+    private void deleteQuestion(User user, Question question, List<Answer> answers) {
+        question.deleteByUser(user, answers);
         questionRepository.save(question);
     }
 
     @GetMapping("/{id}/form")
     public String updateForm(@PathVariable Long id, Model model, HttpSession session) {
         User user = getUser(session);
-        Question question = questionRepository.findById(id).orElseThrow(QuestionNotFoundException::new);
-        question.setWriter(user);
-        question.checkWriter(user);
+        Question question = questionRepository.findByIdAndIsDeletedFalse(id).orElseThrow(QuestionNotFoundException::new);
+        question.validateWriter(user);
         model.addAttribute("question", question);
         return "/qna/updateForm";
     }
@@ -105,7 +104,7 @@ public class QuestionController {
     @PostMapping("/{questionId}/answers")
     public String createAnswer(@PathVariable Long questionId, Answer answer, HttpSession session) {
         User user = getUser(session);
-        Question question = questionRepository.findById(questionId).orElseThrow(QuestionNotFoundException::new);
+        Question question = questionRepository.findByIdAndIsDeletedFalse(questionId).orElseThrow(QuestionNotFoundException::new);
         answer.setWriter(user);
         answer.setQuestion(question);
         answerRepository.save(answer);
@@ -122,7 +121,7 @@ public class QuestionController {
     }
 
     private User getUser(HttpSession session) {
-        Long uid = SessionHandler.getId(session).orElseThrow(UserNotInSessionException::new);
+        Long uid = SessionHandler.getId(session);
         return userRepository.findById(uid).orElseThrow(UserNotFoundException::new);
     }
 

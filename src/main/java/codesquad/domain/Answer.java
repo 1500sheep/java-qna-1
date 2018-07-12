@@ -31,10 +31,12 @@ public class Answer {
 
     }
 
-    public Answer(Question question, User writer, String comment) {
+    public Answer(Long id, Question question, User writer, String comment, boolean isDeleted) {
+        this.id = id;
         this.question = question;
         this.writer = writer;
         this.comment = comment;
+        this.isDeleted = isDeleted;
     }
 
     public Long getId() {
@@ -77,20 +79,21 @@ public class Answer {
         isDeleted = deleted;
     }
 
-    public Answer delete() {
-        isDeleted = true;
+    public Answer deleteByUser(User user) {
+        validateWriter(user);
+        this.isDeleted = true;
         return this;
     }
 
-    public boolean matchWriter(User user) {
-        return writer.equals(user);
+    public boolean isWriterMatch(User other) {
+        return this.writer.equals(other);
     }
 
-    public void deleteByUser(User user) {
-        if (!matchWriter(user)) {
+
+    public void validateWriter(User user) {
+        if (!isWriterMatch(user)) {
             throw new ForbiddenException();
         }
-        this.isDeleted = true;
     }
 
     @Override
